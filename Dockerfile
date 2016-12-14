@@ -4,29 +4,28 @@ MAINTAINER hailongz "hailongz@qq.com"
 
 RUN apk add --update --repository http://mirrors.aliyun.com/alpine/v3.4/main/ \
 	 --repository http://mirrors.aliyun.com/alpine/v3.4/community/ \
-	  gcc libc-dev curl make readline-dev ncurses-dev libevent-dev bash && rm -rf /var/cache/apk/* 
+	  gcc libc-dev make readline-dev ncurses-dev bash linux-headers bsd-compat-headers python file && rm -rf /var/cache/apk/* 
 
 WORKDIR /
 
-RUN curl -R -O http://www.lua.org/ftp/lua-5.2.4.tar.gz
-
-RUN tar zxf lua-5.2.4.tar.gz
-
-WORKDIR /lua-5.2.4
-
-RUN ls
-
+#lua-5.3.0
+COPY ./lib/include/lua /usr/local/include
+COPY ./lib/lua-5.3.0 lua-5.3.0
+WORKDIR /lua-5.3.0
 RUN make linux
-
-RUN make install
-
+RUN cp src/liblua.a /usr/local/lib/liblua.a
 WORKDIR /
+RUN rm -rf lua-5.3.0
 
-RUN ln -s /usr/local/lib/liblua.a /usr/local/lib/liblua5.2.a
-
-RUN rm -rf lua-5.2.4
-
-RUN rm -f lua-5.2.4.tar.gz
+#libevent-2.0.22-stable
+COPY ./lib/include/event /usr/local/include
+COPY ./lib/libevent-2.0.22-stable libevent-2.0.22-stable
+WORKDIR /libevent-2.0.22-stable
+RUN ./configure --enable-static
+RUN make
+RUN cp .libs/libevent.a /usr/local/lib/libevent.a
+WORKDIR /
+RUN rm -rf libevent-2.0.22-stable
 
 RUN echo "Asia/shanghai" >> /etc/timezone
 
